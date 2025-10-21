@@ -17,7 +17,7 @@ class AdminsOrm(BaseModel):
     )
     email: Mapped[str] = mapped_column(
         String(200),
-        qnique=True,
+        unique=True,
         nullable=False,
         index=True
     )
