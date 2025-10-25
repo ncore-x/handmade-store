@@ -51,7 +51,7 @@ class ProductResponse(ProductBase, IDSchema, TimestampSchema):
 
 
 class ProductWithCategory(ProductResponse):
-    category: CategoryResponse
+    category: 'CategoryResponse'
 
 
 class ProductWithImages(ProductResponse):

@@ -2,7 +2,7 @@ from typing import List, Optional, ForwardRef
 from pydantic import Field
 
 from src.schemas.base import BaseSchema, TimestampSchema, IDSchema
-from src.schemas.products import ProductResponse
+
 
 # Для избежания циклических импортов
 CategoryResponse = ForwardRef('CategoryResponse')
@@ -39,7 +39,7 @@ class CategoryResponse(CategoryBase, IDSchema, TimestampSchema):
 
 
 class CategoryWithProducts(CategoryResponse):
-    products: List[ProductResponse] = []
+    products: List['ProductResponse'] = []  # ✅ Строковая аннотация
 
 
 class CategoryWithChildren(CategoryResponse):

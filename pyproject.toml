@@ -23,6 +23,7 @@ dependencies = [
     "redis>=6.4.0",
     "ruff>=0.14.1",
     "sqlalchemy>=2.0.44",
+    "pydantic[email]>=2.12.2",
 ]
 [tool.ruff]
 line-length = 100

@@ -1,5 +1,6 @@
 from src.schemas.base import BaseSchema, TimestampSchema, IDSchema
 
+# Сначала импортируем базовые схемы без композитных типов
 from src.schemas.admins import (
     AdminBase,
     AdminCreate,
@@ -49,6 +50,21 @@ from src.schemas.orders import (
     PaymentStatusUpdate,
     OrderStats,
 )
+
+# Теперь разрешаем forward references
+from src.schemas.categories import CategoryWithProducts, CategoryWithChildren
+from src.schemas.products import ProductWithCategory, ProductWithImages, ProductFull
+
+# Явно вызываем model_rebuild для схем с forward references
+try:
+    CategoryWithProducts.model_rebuild()
+    CategoryWithChildren.model_rebuild()
+    ProductWithCategory.model_rebuild()
+    ProductWithImages.model_rebuild()
+    ProductFull.model_rebuild()
+    OrderItemWithProduct.model_rebuild()
+except Exception as e:
+    print(f"Warning: Could not rebuild some models: {e}")
 
 __all__ = [
     # Base
