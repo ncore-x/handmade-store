@@ -2,8 +2,8 @@ from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from passlib.context import CryptContext
 
-from src.repositories.admins import AdminRepository
-from src.schemas.admins import AdminCreate, AdminUpdate, AdminResponse, AdminLogin
+from src.repositories.admin import AdminRepository
+from src.schemas.admin import AdminCreate, AdminUpdate, AdminResponse, AdminLogin
 from src.services.base import BaseService
 
 # Хеширование паролей

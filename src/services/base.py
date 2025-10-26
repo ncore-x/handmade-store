@@ -2,6 +2,7 @@ from typing import TypeVar, Generic, List, Optional, Any
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.repositories.base import BaseRepository
+from src.utils.db_manager import DBManager
 
 ModelType = TypeVar("ModelType")
 CreateSchemaType = TypeVar("CreateSchemaType")
@@ -10,10 +11,10 @@ ResponseSchemaType = TypeVar("ResponseSchemaType")
 
 
 class BaseService(Generic[ModelType, CreateSchemaType, UpdateSchemaType, ResponseSchemaType]):
-    """Базовый сервис с CRUD операциями"""
+    db: DBManager | None
 
-    def __init__(self, repository: BaseRepository):
-        self.repository = repository
+    def __init__(self, db: DBManager | None = None) -> None:
+        self.db = db
 
     async def get(self, db: AsyncSession, id: int) -> Optional[ResponseSchemaType]:
         """Получить одну запись"""

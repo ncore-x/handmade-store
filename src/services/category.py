@@ -1,8 +1,8 @@
 from typing import List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.repositories.categories import CategoryRepository
-from src.schemas.categories import (
+from src.repositories.category import CategoryRepository
+from src.schemas.category import (
     CategoryCreate, CategoryUpdate, CategoryResponse,
     CategoryWithChildren, CategoryWithProducts
 )

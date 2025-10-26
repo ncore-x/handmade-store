@@ -2,7 +2,7 @@ from typing import List, Optional, Dict, Any
 from pydantic import Field, HttpUrl
 
 from src.schemas.base import BaseSchema, TimestampSchema, IDSchema
-from src.schemas.categories import CategoryResponse
+from src.schemas.category import CategoryResponse
 
 
 class ProductBase(BaseSchema):

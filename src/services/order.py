@@ -1,9 +1,9 @@
 from typing import List, Optional, Dict, Any
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.repositories.orders import OrderRepository, OrderItemRepository
-from src.repositories.products import ProductRepository
-from src.schemas.orders import (
+from src.repositories.order import OrderRepository, OrderItemRepository
+from src.repositories.product import ProductRepository
+from src.schemas.order import (
     OrderCreate, OrderUpdate, OrderResponse, OrderWithItems, OrderFull,
     OrderItemCreate, OrderItemResponse, OrderStats
 )

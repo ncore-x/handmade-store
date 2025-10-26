@@ -1,7 +1,6 @@
 from src.schemas.base import BaseSchema, TimestampSchema, IDSchema
 
-# Сначала импортируем базовые схемы без композитных типов
-from src.schemas.admins import (
+from src.schemas.admin import (
     AdminBase,
     AdminCreate,
     AdminUpdate,
@@ -11,7 +10,7 @@ from src.schemas.admins import (
     TokenData,
 )
 
-from src.schemas.categories import (
+from src.schemas.category import (
     CategoryBase,
     CategoryCreate,
     CategoryUpdate,
@@ -20,7 +19,7 @@ from src.schemas.categories import (
     CategoryWithChildren,
 )
 
-from src.schemas.products import (
+from src.schemas.product import (
     ProductBase,
     ProductCreate,
     ProductUpdate,
@@ -35,7 +34,7 @@ from src.schemas.products import (
     CustomizationRequest,
 )
 
-from src.schemas.orders import (
+from src.schemas.order import (
     OrderBase,
     OrderCreate,
     OrderUpdate,
@@ -51,11 +50,9 @@ from src.schemas.orders import (
     OrderStats,
 )
 
-# Теперь разрешаем forward references
-from src.schemas.categories import CategoryWithProducts, CategoryWithChildren
-from src.schemas.products import ProductWithCategory, ProductWithImages, ProductFull
+from src.schemas.category import CategoryWithProducts, CategoryWithChildren
+from src.schemas.product import ProductWithCategory, ProductWithImages, ProductFull
 
-# Явно вызываем model_rebuild для схем с forward references
 try:
     CategoryWithProducts.model_rebuild()
     CategoryWithChildren.model_rebuild()
@@ -67,12 +64,10 @@ except Exception as e:
     print(f"Warning: Could not rebuild some models: {e}")
 
 __all__ = [
-    # Base
     "BaseSchema",
     "TimestampSchema",
     "IDSchema",
 
-    # Admins
     "AdminBase",
     "AdminCreate",
     "AdminUpdate",
@@ -81,7 +76,6 @@ __all__ = [
     "Token",
     "TokenData",
 
-    # Categories
     "CategoryBase",
     "CategoryCreate",
     "CategoryUpdate",
@@ -89,7 +83,6 @@ __all__ = [
     "CategoryWithProducts",
     "CategoryWithChildren",
 
-    # Products
     "ProductBase",
     "ProductCreate",
     "ProductUpdate",
@@ -103,7 +96,6 @@ __all__ = [
     "ProductImageResponse",
     "CustomizationRequest",
 
-    # Orders
     "OrderBase",
     "OrderCreate",
     "OrderUpdate",

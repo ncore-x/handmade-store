@@ -2,7 +2,7 @@ from typing import List, Optional, Dict, Any
 from pydantic import Field, EmailStr
 
 from src.schemas.base import BaseSchema, TimestampSchema, IDSchema
-from src.schemas.products import ProductResponse
+from src.schemas.product import ProductResponse
 
 
 class OrderItemBase(BaseSchema):

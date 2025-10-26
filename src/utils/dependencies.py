@@ -1,23 +1,27 @@
-from typing import AsyncGenerator
-from fastapi import Depends, HTTPException, status
+from typing import Annotated, AsyncGenerator
+from fastapi import Depends, HTTPException, Query, status
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.utils.database import get_async_session
-from src.schemas.admins import AdminResponse
-from src.services.admins import AdminService
-from src.services.categories import CategoryService
-from src.services.orders import OrderService
-from src.services.products import ProductService
+from src.utils.database import async_session_maker
+from src.schemas.admin import AdminResponse
+from src.services.admin import AdminService
+from src.services.category import CategoryService
+from src.services.order import OrderService
+from src.services.product import ProductService
+from src.utils.db_manager import DBManager
 
 
-# Зависимости для подключения к БД
-async def get_db() -> AsyncGenerator[AsyncSession, None]:
-    """Зависимость для получения сессии БД"""
-    async for session in get_async_session():
-        yield session
+class PaginationParams(BaseModel):
+    page: Annotated[int, Query(1, ge=1)]
+    per_page: Annotated[int | None, Query(None, ge=1, lt=30)]
 
 
-# Зависимости для сервисов
+async def get_db():
+    async with DBManager(session_factory=async_session_maker) as db:
+        yield db
+
+
 def get_admin_service() -> AdminService:
     return AdminService()
 
@@ -67,3 +71,8 @@ async def require_admin(
 ) -> AdminResponse:
     """Зависимость, требующая аутентификации администратора"""
     return current_admin
+
+
+PaginationDep = Annotated[PaginationParams, Depends()]
+AdminIdDep = Annotated[int, Depends(get_current_admin)]
+DBDep = Annotated[DBManager, Depends(get_db)]

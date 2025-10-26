@@ -2,11 +2,11 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.schemas.orders import (
+from src.schemas.order import (
     OrderCreate, OrderUpdate, OrderResponse, OrderWithItems, OrderFull,
     OrderStatusUpdate, PaymentStatusUpdate, OrderStats
 )
-from src.services.orders import OrderService
+from src.services.order import OrderService
 from src.utils.dependencies import get_db, get_order_service, require_admin
 
 router = APIRouter(prefix="/orders", tags=["orders"])

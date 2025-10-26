@@ -8,8 +8,6 @@ from src.schemas.base import BaseSchema, TimestampSchema, IDSchema
 class AdminBase(BaseSchema):
     username: str = Field(..., min_length=3, max_length=50)
     email: EmailStr
-    is_active: bool = True
-    is_superuser: bool = False
     permissions: List[str] = Field(default_factory=list)
 
 
@@ -21,8 +19,6 @@ class AdminUpdate(BaseSchema):
     username: Optional[str] = Field(None, min_length=3, max_length=50)
     email: Optional[EmailStr] = None
     password: Optional[str] = Field(None, min_length=6)
-    is_active: Optional[bool] = None
-    is_superuser: Optional[bool] = None
     permissions: Optional[List[str]] = None
 
 

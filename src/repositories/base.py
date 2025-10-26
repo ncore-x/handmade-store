@@ -9,8 +9,6 @@ ModelType = TypeVar("ModelType", bound=BaseModel)
 
 
 class BaseRepository(Generic[ModelType]):
-    """Базовый репозиторий с CRUD операциями"""
-
     def __init__(self, model: Type[ModelType]):
         self.model = model
 

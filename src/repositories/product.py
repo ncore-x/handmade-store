@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from src.repositories.base import BaseRepository
-from src.models.products import ProductsOrm, ProductsImagesOrm
+from src.models.product import ProductsOrm, ProductsImagesOrm
 
 
 class ProductRepository(BaseRepository[ProductsOrm]):

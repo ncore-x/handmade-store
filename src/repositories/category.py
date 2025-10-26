@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from src.repositories.base import BaseRepository
-from src.models.categories import CategoriesOrm
+from src.models.category import CategoriesOrm
 
 
 class CategoryRepository(BaseRepository[CategoriesOrm]):

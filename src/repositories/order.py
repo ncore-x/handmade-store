@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from src.repositories.base import BaseRepository
-from src.models.orders import OrdersOrm, OrdersItemsOrm
+from src.models.order import OrdersOrm, OrdersItemsOrm
 
 
 class OrderRepository(BaseRepository[OrdersOrm]):
@@ -39,7 +39,6 @@ class OrderRepository(BaseRepository[OrdersOrm]):
         skip: int = 0,
         limit: int = 100
     ) -> List[OrdersOrm]:
-        """Получить заказы по email клиента"""
         result = await db.execute(
             select(OrdersOrm)
             .where(OrdersOrm.customer_email == email)
@@ -56,7 +55,6 @@ class OrderRepository(BaseRepository[OrdersOrm]):
         skip: int = 0,
         limit: int = 100
     ) -> List[OrdersOrm]:
-        """Получить заказы по статусу"""
         result = await db.execute(
             select(OrdersOrm)
             .where(OrdersOrm.status == status)
@@ -109,27 +107,23 @@ class OrderRepository(BaseRepository[OrdersOrm]):
         """Получить статистику по заказам"""
         from sqlalchemy import func
 
-        # Общее количество заказов
         total_result = await db.execute(
             select(func.count(OrdersOrm.id))
         )
         total_orders = total_result.scalar()
 
-        # Заказы в ожидании
         pending_result = await db.execute(
             select(func.count(OrdersOrm.id))
             .where(OrdersOrm.status == "pending")
         )
         pending_orders = pending_result.scalar()
 
-        # Завершенные заказы
         completed_result = await db.execute(
             select(func.count(OrdersOrm.id))
             .where(OrdersOrm.status == "completed")
         )
         completed_orders = completed_result.scalar()
 
-        # Общая выручка
         revenue_result = await db.execute(
             select(func.coalesce(func.sum(OrdersOrm.total_amount), 0))
             .where(OrdersOrm.payment_status == "paid")

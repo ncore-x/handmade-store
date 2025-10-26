@@ -1,8 +1,8 @@
 from src.models.base import Base, BaseModel
-from src.models.admins import AdminsOrm
-from src.models.categories import CategoriesOrm
-from src.models.orders import OrdersOrm, OrdersItemsOrm
-from src.models.products import ProductsOrm, ProductsImagesOrm
+from src.models.admin import AdminsOrm
+from src.models.category import CategoriesOrm
+from src.models.order import OrdersOrm, OrdersItemsOrm
+from src.models.product import ProductsOrm, ProductsImagesOrm
 
 __all__ = [
     "Base",

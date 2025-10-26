@@ -24,6 +24,7 @@ dependencies = [
     "ruff>=0.14.1",
     "sqlalchemy>=2.0.44",
     "pydantic[email]>=2.12.2",
+    "pyjwt>=2.0.0",
 ]
 [tool.ruff]
 line-length = 100

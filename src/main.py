@@ -5,14 +5,13 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.api.admin import router as router_admins
-from src.api.categories import router as router_categories
-from src.api.orders import router as router_orders
-from src.api.products import router as router_products
+from src.api.category import router as router_categories
+from src.api.order import router as router_orders
+from src.api.product import router as router_products
 
 
 sys.path.append(str(Path(__file__).parent.parent))
 
-# Создание приложения FastAPI
 app = FastAPI(
     title="Handmade Store API",
     description="API для магазина handmade браслетов",
@@ -21,16 +20,14 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
-# Настройка CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # В продакшене заменить на конкретные домены
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Подключение роутеров
 app.include_router(router_admins)
 app.include_router(router_categories)
 app.include_router(router_orders)
@@ -39,7 +36,6 @@ app.include_router(router_products)
 
 @app.get("/")
 async def root():
-    """Корневой endpoint"""
     return {
         "message": "Добро пожаловать в Handmade Store API!",
         "docs": "/docs",
@@ -49,7 +45,6 @@ async def root():
 
 @app.get("/health")
 async def health_check():
-    """Health check endpoint"""
     return {"status": "healthy"}
 
 

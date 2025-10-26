@@ -2,11 +2,11 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.schemas.categories import (
+from src.schemas.category import (
     CategoryCreate, CategoryUpdate, CategoryResponse,
     CategoryWithProducts, CategoryWithChildren
 )
-from src.services.categories import CategoryService
+from src.services.category import CategoryService
 from src.utils.dependencies import get_db, get_category_service, require_admin
 
 router = APIRouter(prefix="/categories", tags=["categories"])

@@ -2,12 +2,12 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.schemas.products import (
+from src.schemas.product import (
     ProductCreate, ProductUpdate, ProductResponse,
     ProductWithCategory, ProductWithImages, ProductFull,
     ProductImageCreate, ProductImageResponse
 )
-from src.services.products import ProductService, ProductImageService
+from src.services.product import ProductService, ProductImageService
 from src.utils.dependencies import get_db, get_product_service, require_admin
 
 router = APIRouter(prefix="/products", tags=["products"])
