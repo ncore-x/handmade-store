@@ -1,14 +1,14 @@
 from typing import List
-from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.schemas.product import (
     ProductCreate, ProductUpdate, ProductResponse,
-    ProductWithCategory, ProductWithImages, ProductFull,
+    ProductFull,
     ProductImageCreate, ProductImageResponse
 )
-from src.services.product import ProductService, ProductImageService
-from src.utils.dependencies import get_db, get_product_service, require_admin
+from src.services.product import ProductService
+from src.utils.dependencies import get_db, get_product_service
 
 router = APIRouter(prefix="/products", tags=["products"])
 
@@ -118,8 +118,7 @@ async def get_product_images(
 async def create_product(
     product_data: ProductCreate,
     product_service: ProductService = Depends(get_product_service),
-    db: AsyncSession = Depends(get_db),
-    current_admin=Depends(require_admin)
+    db: AsyncSession = Depends(get_db)
 ):
     """Создать новый товар"""
     try:
@@ -136,8 +135,7 @@ async def update_product(
     product_id: int,
     product_update: ProductUpdate,
     product_service: ProductService = Depends(get_product_service),
-    db: AsyncSession = Depends(get_db),
-    current_admin=Depends(require_admin)
+    db: AsyncSession = Depends(get_db)
 ):
     """Обновить товар"""
     updated_product = await product_service.update(db, product_id, product_update)
@@ -154,8 +152,7 @@ async def update_product_stock(
     product_id: int,
     new_quantity: int = Query(..., ge=0),
     product_service: ProductService = Depends(get_product_service),
-    db: AsyncSession = Depends(get_db),
-    current_admin=Depends(require_admin)
+    db: AsyncSession = Depends(get_db)
 ):
     """Обновить количество товара на складе"""
     try:
@@ -177,8 +174,7 @@ async def update_product_stock(
 async def delete_product(
     product_id: int,
     product_service: ProductService = Depends(get_product_service),
-    db: AsyncSession = Depends(get_db),
-    current_admin=Depends(require_admin)
+    db: AsyncSession = Depends(get_db)
 ):
     """Удалить товар"""
     success = await product_service.delete(db, product_id)
@@ -197,8 +193,7 @@ async def add_product_image(
     image_url: str,  # В реальном приложении загружать файлы
     alt_text: str = None,
     product_service: ProductService = Depends(get_product_service),
-    db: AsyncSession = Depends(get_db),
-    current_admin=Depends(require_admin)
+    db: AsyncSession = Depends(get_db)
 ):
     """Добавить изображение к товару"""
     image_data = ProductImageCreate(
@@ -220,8 +215,7 @@ async def add_product_image(
 async def set_main_image(
     image_id: int,
     product_service: ProductService = Depends(get_product_service),
-    db: AsyncSession = Depends(get_db),
-    current_admin=Depends(require_admin)
+    db: AsyncSession = Depends(get_db)
 ):
     """Установить изображение как главное"""
     success = await product_service.set_main_image(db, image_id)

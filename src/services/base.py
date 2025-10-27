@@ -1,7 +1,6 @@
-from typing import TypeVar, Generic, List, Optional, Any
+from typing import TypeVar, Generic, List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.repositories.base import BaseRepository
 from src.utils.db_manager import DBManager
 
 ModelType = TypeVar("ModelType")

@@ -1,5 +1,5 @@
 from typing import List, Optional, Dict, Any
-from sqlalchemy import select, and_, func
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -8,8 +8,8 @@ from src.models.order import OrdersOrm, OrdersItemsOrm
 
 
 class OrderRepository(BaseRepository[OrdersOrm]):
-    def __init__(self):
-        super().__init__(OrdersOrm)
+    def __init__(self, session: AsyncSession):
+        super().__init__(OrdersOrm, session)
 
     async def get_with_items(self, db: AsyncSession, id: int) -> Optional[OrdersOrm]:
         """Получить заказ с позициями"""
@@ -105,7 +105,6 @@ class OrderRepository(BaseRepository[OrdersOrm]):
 
     async def get_order_stats(self, db: AsyncSession) -> Dict[str, Any]:
         """Получить статистику по заказам"""
-        from sqlalchemy import func
 
         total_result = await db.execute(
             select(func.count(OrdersOrm.id))
@@ -139,8 +138,8 @@ class OrderRepository(BaseRepository[OrdersOrm]):
 
 
 class OrderItemRepository(BaseRepository[OrdersItemsOrm]):
-    def __init__(self):
-        super().__init__(OrdersItemsOrm)
+    def __init__(self, session: AsyncSession):
+        super().__init__(OrdersItemsOrm, session)
 
     async def get_by_order(self, db: AsyncSession, order_id: int) -> List[OrdersItemsOrm]:
         """Получить позиции заказа"""

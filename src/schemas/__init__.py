@@ -1,13 +1,11 @@
 from src.schemas.base import BaseSchema, TimestampSchema, IDSchema
 
 from src.schemas.admin import (
-    AdminBase,
-    AdminCreate,
-    AdminUpdate,
+    AdminRequestAdd,
+    AdminAdd,
+    Admin,
     AdminResponse,
-    AdminLogin,
-    Token,
-    TokenData,
+    AdminWithHashedPassword,
 )
 
 from src.schemas.category import (
@@ -50,8 +48,6 @@ from src.schemas.order import (
     OrderStats,
 )
 
-from src.schemas.category import CategoryWithProducts, CategoryWithChildren
-from src.schemas.product import ProductWithCategory, ProductWithImages, ProductFull
 
 try:
     CategoryWithProducts.model_rebuild()
@@ -68,13 +64,11 @@ __all__ = [
     "TimestampSchema",
     "IDSchema",
 
-    "AdminBase",
-    "AdminCreate",
-    "AdminUpdate",
+    "AdminRequestAdd",
+    "AdminAdd",
+    "Admin",
     "AdminResponse",
-    "AdminLogin",
-    "Token",
-    "TokenData",
+    "AdminWithHashedPassword",
 
     "CategoryBase",
     "CategoryCreate",

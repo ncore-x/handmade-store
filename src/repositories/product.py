@@ -1,5 +1,5 @@
-from typing import List, Optional, Dict, Any
-from sqlalchemy import select, and_, or_
+from typing import List, Optional
+from sqlalchemy import select, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -8,8 +8,8 @@ from src.models.product import ProductsOrm, ProductsImagesOrm
 
 
 class ProductRepository(BaseRepository[ProductsOrm]):
-    def __init__(self):
-        super().__init__(ProductsOrm)
+    def __init__(self, session: AsyncSession):
+        super().__init__(ProductsOrm, session)
 
     async def get_with_images(self, db: AsyncSession, id: int) -> Optional[ProductsOrm]:
         """Получить товар с изображениями"""
@@ -114,8 +114,8 @@ class ProductRepository(BaseRepository[ProductsOrm]):
 
 
 class ProductImageRepository(BaseRepository[ProductsImagesOrm]):
-    def __init__(self):
-        super().__init__(ProductsImagesOrm)
+    def __init__(self, session: AsyncSession):
+        super().__init__(ProductsImagesOrm, session)
 
     async def get_by_product(self, db: AsyncSession, product_id: int) -> List[ProductsImagesOrm]:
         """Получить все изображения товара"""

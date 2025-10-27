@@ -39,7 +39,7 @@ class CategoryResponse(CategoryBase, IDSchema, TimestampSchema):
 
 
 class CategoryWithProducts(CategoryResponse):
-    products: List['ProductResponse'] = []  # type: ignore
+    products: List['ProductResponse'] = []  # type: ignore # noqa
 
 
 class CategoryWithChildren(CategoryResponse):

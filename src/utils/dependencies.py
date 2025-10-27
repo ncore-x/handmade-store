@@ -1,15 +1,20 @@
-from typing import Annotated, AsyncGenerator
-from fastapi import Depends, HTTPException, Query, status
+from typing import Annotated
+from fastapi import Depends, Query, Request
 from pydantic import BaseModel
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.utils.database import async_session_maker
-from src.schemas.admin import AdminResponse
 from src.services.admin import AdminService
 from src.services.category import CategoryService
 from src.services.order import OrderService
 from src.services.product import ProductService
 from src.utils.db_manager import DBManager
+from src.exceptions import (
+    ExpiredTokenException,
+    ExpiredTokenHTTPException,
+    IncorrectTokenException,
+    IncorrectTokenHTTPException,
+    NoAccessTokenHTTPException
+)
 
 
 class PaginationParams(BaseModel):
@@ -38,41 +43,31 @@ def get_order_service() -> OrderService:
     return OrderService()
 
 
-# Простая аутентификация для админки (можно заменить на JWT)
-async def get_current_admin(
-    admin_service: AdminService = Depends(get_admin_service),
-    db: AsyncSession = Depends(get_db),
-    token: str = None  # В реальном приложении через Header
-) -> AdminResponse:
-    """
-    Простая аутентификация администратора.
-    В реальном приложении заменить на JWT.
-    """
+def get_token(request: Request) -> str:
+    token = request.cookies.get("access_token", None)
     if not token:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated"
-        )
-
-    # Временная реализация - проверяем существование администратора
-    admin = await admin_service.get_by_username(db, "admin")
-    if not admin:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authentication credentials"
-        )
-
-    return admin
+        raise NoAccessTokenHTTPException()
+    return token
 
 
-# Зависимость для проверки прав администратора
-async def require_admin(
-    current_admin: AdminResponse = Depends(get_current_admin)
-) -> AdminResponse:
-    """Зависимость, требующая аутентификации администратора"""
-    return current_admin
+def get_current_admin_id(
+    token: str = Depends(get_token),
+    db: DBManager = Depends(lambda: DBManager(
+        session_factory=async_session_maker)),
+) -> int:
+    try:
+        payload = AdminService(db).decode_token(token)
+    except ExpiredTokenException:
+        raise ExpiredTokenHTTPException
+    except IncorrectTokenException:
+        raise IncorrectTokenHTTPException()
+
+    admin_id = payload.get("admin_id")
+    if not admin_id:
+        raise IncorrectTokenHTTPException()
+    return admin_id
 
 
 PaginationDep = Annotated[PaginationParams, Depends()]
-AdminIdDep = Annotated[int, Depends(get_current_admin)]
+AdminIdDep = Annotated[int, Depends(get_current_admin_id)]
 DBDep = Annotated[DBManager, Depends(get_db)]

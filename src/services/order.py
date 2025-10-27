@@ -1,11 +1,11 @@
-from typing import List, Optional, Dict, Any
+from typing import List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.repositories.order import OrderRepository, OrderItemRepository
 from src.repositories.product import ProductRepository
 from src.schemas.order import (
-    OrderCreate, OrderUpdate, OrderResponse, OrderWithItems, OrderFull,
-    OrderItemCreate, OrderItemResponse, OrderStats
+    OrderCreate, OrderResponse, OrderWithItems, OrderFull,
+    OrderStats
 )
 from src.services.base import BaseService
 

@@ -1,14 +1,13 @@
-from typing import List, Optional, Dict, Any
+from typing import List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.repositories.product import ProductRepository, ProductImageRepository
 from src.repositories.category import CategoryRepository
 from src.schemas.product import (
-    ProductCreate, ProductUpdate, ProductResponse,
-    ProductWithCategory, ProductWithImages, ProductFull,
-    ProductImageCreate, ProductImageUpdate, ProductImageResponse
+    ProductCreate, ProductResponse,
+    ProductWithImages, ProductFull,
+    ProductImageCreate, ProductImageResponse
 )
-from src.schemas.category import CategoryResponse
 from src.services.base import BaseService
 
 

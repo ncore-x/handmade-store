@@ -7,7 +7,7 @@ from src.schemas.category import (
     CategoryWithProducts, CategoryWithChildren
 )
 from src.services.category import CategoryService
-from src.utils.dependencies import get_db, get_category_service, require_admin
+from src.utils.dependencies import get_db, get_category_service
 
 router = APIRouter(prefix="/categories", tags=["categories"])
 
@@ -120,8 +120,7 @@ async def get_category_children(
 async def create_category(
     category_data: CategoryCreate,
     category_service: CategoryService = Depends(get_category_service),
-    db: AsyncSession = Depends(get_db),
-    current_admin=Depends(require_admin)
+    db: AsyncSession = Depends(get_db)
 ):
     """Создать новую категорию"""
     try:
@@ -138,8 +137,7 @@ async def update_category(
     category_id: int,
     category_update: CategoryUpdate,
     category_service: CategoryService = Depends(get_category_service),
-    db: AsyncSession = Depends(get_db),
-    current_admin=Depends(require_admin)
+    db: AsyncSession = Depends(get_db)
 ):
     """Обновить категорию"""
     updated_category = await category_service.update(db, category_id, category_update)
@@ -155,8 +153,7 @@ async def update_category(
 async def delete_category(
     category_id: int,
     category_service: CategoryService = Depends(get_category_service),
-    db: AsyncSession = Depends(get_db),
-    current_admin=Depends(require_admin)
+    db: AsyncSession = Depends(get_db)
 ):
     """Удалить категорию"""
     success = await category_service.delete(db, category_id)

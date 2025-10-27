@@ -1,72 +1,81 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter, Request, Response
 
-from src.utils.dependencies import get_db, get_admin_service, require_admin
-from src.schemas.admin import AdminCreate, AdminUpdate, AdminResponse, AdminLogin, Token
+from src.utils.dependencies import AdminIdDep, DBDep
+from src.schemas.admin import AdminRequestAdd, AdminResponse
 from src.services.admin import AdminService
+from src.exceptions import (
+    AdminAlreadyExistsException,
+    AdminEmailAlreadyExistsHTTPException,
+    AdminIsAlreadyAuthenticatedHTTPException,
+    AdminNotAuthenticatedException,
+    AdminNotAuthenticatedHTTPException,
+    EmailNotRegisteredException,
+    EmailNotRegisteredHTTPException,
+    ExpiredTokenException,
+    IncorrectPasswordException,
+    IncorrectPasswordHTTPException,
+    IncorrectTokenException
+)
 
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
 
-@router.post("/register", response_model=AdminResponse)
-async def admin_register(
-    admin_data: AdminCreate,
-    admin_service: AdminService = Depends(get_admin_service),
-    db: AsyncSession = Depends(get_db),
-    get_current_admin: AdminResponse = Depends(require_admin)
+@router.post("/register", summary="Регистрация нового администратора")
+async def register_admin(
+    data: AdminRequestAdd,
+    db: DBDep,
 ):
-    """Создание нового администратора (требует аутентификации)"""
     try:
-        return await admin_service.create(db, admin_data)
-    except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
+        await AdminService(db).register_admin(data)
+    except AdminAlreadyExistsException:
+        raise AdminEmailAlreadyExistsHTTPException()
+    return {"detail": "Вы успешно зарегистрировались!"}
 
 
-@router.post("/login", response_model=Token)
-async def admin_login(
-    login_data: AdminLogin,
-    admin_service: AdminService = Depends(get_admin_service),
-    db: AsyncSession = Depends(get_db)
+@router.post("/login", summary="Вход администратора в систему")
+async def login_admin(
+    data: AdminRequestAdd,
+    response: Response,
+    request: Request,
+    db: DBDep,
 ):
-    """
-    Аутентификация администратора.
-    Временная реализация - в продакшене заменить на JWT.
-    """
-    admin = await admin_service.authenticate(db, login_data)
-    if not admin:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password"
-        )
+    token = request.cookies.get("access_token")
+    if token:
+        try:
+            AdminService(db).decode_token(token)
+            raise AdminIsAlreadyAuthenticatedHTTPException()
+        except ExpiredTokenException:
+            pass
+        except IncorrectTokenException:
+            pass
 
-    # Временный токен (в реальном приложении генерировать JWT)
-    return Token(access_token="admin-token", token_type="bearer")
+    try:
+        access_token = await AdminService(db).login_admin(data)
+    except EmailNotRegisteredException:
+        raise EmailNotRegisteredHTTPException()
+    except IncorrectPasswordException:
+        raise IncorrectPasswordHTTPException()
+
+    response.set_cookie("access_token", access_token)
+    return {"detail": "Успешный вход в систему!", "access_token": access_token}
 
 
-@router.get("/me", response_model=AdminResponse)
-async def get_current_admin_info(
-    current_admin: AdminResponse = Depends(require_admin)
+@router.get("/me", summary="Получение текущего администратора в системе", response_model=AdminResponse)
+async def get_me(
+    admin_id: AdminIdDep,
+    db: DBDep,
 ):
-    """Получить информацию о текущем администраторе"""
-    return current_admin
+    return await AdminService(db).get_one_or_none_admin(admin_id)
 
 
-@router.put("/me", response_model=AdminResponse)
-async def update_current_admin(
-    admin_update: AdminUpdate,
-    admin_service: AdminService = Depends(get_admin_service),
-    db: AsyncSession = Depends(get_db),
-    current_admin: AdminResponse = Depends(require_admin)
-):
-    """Обновить информацию текущего администратора"""
-    updated_admin = await admin_service.update(db, current_admin.id, admin_update)
-    if not updated_admin:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Admin not found"
-        )
-    return updated_admin
+@router.post("/logout", summary="Выход из системы", response_model=None)
+async def logout_admin(response: Response, request: Request, db: DBDep):
+    token = request.cookies.get("access_token")
+    try:
+        await AdminService(db).logout_admin(token)
+    except AdminNotAuthenticatedException:
+        raise AdminNotAuthenticatedHTTPException()
+
+    response.delete_cookie("access_token")
+    return {"detail": "Вы вышли из системы!"}

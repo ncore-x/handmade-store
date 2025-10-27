@@ -7,7 +7,7 @@ from src.schemas.order import (
     OrderStatusUpdate, PaymentStatusUpdate, OrderStats
 )
 from src.services.order import OrderService
-from src.utils.dependencies import get_db, get_order_service, require_admin
+from src.utils.dependencies import get_db, get_order_service
 
 router = APIRouter(prefix="/orders", tags=["orders"])
 
@@ -33,8 +33,7 @@ async def get_orders(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
     order_service: OrderService = Depends(get_order_service),
-    db: AsyncSession = Depends(get_db),
-    current_admin=Depends(require_admin)
+    db: AsyncSession = Depends(get_db)
 ):
     """Получить список заказов (только для администраторов)"""
     return await order_service.get_multi(db, skip, limit)
@@ -72,8 +71,7 @@ async def get_order(
 async def get_order_full(
     order_id: int,
     order_service: OrderService = Depends(get_order_service),
-    db: AsyncSession = Depends(get_db),
-    current_admin=Depends(require_admin)
+    db: AsyncSession = Depends(get_db)
 ):
     """Получить заказ с позициями и товарами (только для администраторов)"""
     order = await order_service.get_with_items_and_products(db, order_id)
@@ -91,8 +89,7 @@ async def get_orders_by_status(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
     order_service: OrderService = Depends(get_order_service),
-    db: AsyncSession = Depends(get_db),
-    current_admin=Depends(require_admin)
+    db: AsyncSession = Depends(get_db)
 ):
     """Получить заказы по статусу (только для администраторов)"""
     try:
@@ -110,8 +107,7 @@ async def update_order_status(
     order_id: int,
     status_update: OrderStatusUpdate,
     order_service: OrderService = Depends(get_order_service),
-    db: AsyncSession = Depends(get_db),
-    current_admin=Depends(require_admin)
+    db: AsyncSession = Depends(get_db)
 ):
     """Обновить статус заказа"""
     try:
@@ -134,8 +130,7 @@ async def update_payment_status(
     order_id: int,
     payment_update: PaymentStatusUpdate,
     order_service: OrderService = Depends(get_order_service),
-    db: AsyncSession = Depends(get_db),
-    current_admin=Depends(require_admin)
+    db: AsyncSession = Depends(get_db)
 ):
     """Обновить статус оплаты"""
     try:
@@ -160,8 +155,7 @@ async def update_order(
     order_id: int,
     order_update: OrderUpdate,
     order_service: OrderService = Depends(get_order_service),
-    db: AsyncSession = Depends(get_db),
-    current_admin=Depends(require_admin)
+    db: AsyncSession = Depends(get_db)
 ):
     """Обновить заказ"""
     updated_order = await order_service.update(db, order_id, order_update)
@@ -176,8 +170,7 @@ async def update_order(
 @router.get("/admin/stats", response_model=OrderStats)
 async def get_order_stats(
     order_service: OrderService = Depends(get_order_service),
-    db: AsyncSession = Depends(get_db),
-    current_admin=Depends(require_admin)
+    db: AsyncSession = Depends(get_db)
 ):
     """Получить статистику по заказам (только для администраторов)"""
     return await order_service.get_order_stats(db)

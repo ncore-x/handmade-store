@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.repositories.category import CategoryRepository
 from src.schemas.category import (
-    CategoryCreate, CategoryUpdate, CategoryResponse,
+    CategoryCreate, CategoryResponse,
     CategoryWithChildren, CategoryWithProducts
 )
 from src.services.base import BaseService

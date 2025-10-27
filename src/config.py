@@ -11,10 +11,12 @@ class Settings(BaseSettings):
     DB_PASS: str
     DB_NAME: str
 
-    JWT_PRIVATE_KEY_PATH: str = "config/keys/private_key.pem"
-    JWT_PUBLIC_KEY_PATH: str = "config/keys/public_key.pem"
-    JWT_ALGORITHM: str = "RS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    JWT_PRIVATE_KEY_PATH: str
+    JWT_PUBLIC_KEY_PATH: str
+    JWT_ALGORITHM: str
+    ACCESS_TOKEN_EXPIRE_MINUTES: int
+
+    SUPERADMIN_PASSWORD: str
 
     @property
     def DB_URL(self):
