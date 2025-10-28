@@ -113,7 +113,6 @@ async def get_product_images(
     return await product_service.get_product_images(db, product_id)
 
 
-# Админские endpoints
 @router.post("/", response_model=ProductResponse)
 async def create_product(
     product_data: ProductCreate,
@@ -186,11 +185,10 @@ async def delete_product(
     return {"message": "Product deleted successfully"}
 
 
-# Работа с изображениями
 @router.post("/{product_id}/images", response_model=ProductImageResponse)
 async def add_product_image(
     product_id: int,
-    image_url: str,  # В реальном приложении загружать файлы
+    image_url: str,
     alt_text: str = None,
     product_service: ProductService = Depends(get_product_service),
     db: AsyncSession = Depends(get_db)

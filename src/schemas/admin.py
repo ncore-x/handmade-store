@@ -1,8 +1,7 @@
-from datetime import datetime
 from typing import Optional
 from pydantic import EmailStr
 
-from src.schemas.base import BaseSchema, TimestampSchema, IDSchema
+from src.schemas.base import BaseSchema
 
 
 class AdminRequestAdd(BaseSchema):

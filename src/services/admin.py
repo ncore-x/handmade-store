@@ -18,9 +18,8 @@ from src.exceptions import (
 
 
 class AdminService:
-    def __init__(self, db_manager):  # ← Принимаем DBManager вместо AsyncSession
+    def __init__(self, db_manager):
         self.db_manager = db_manager
-        # Используем session из DBManager для репозитория
         self.repository = AdminRepository(db_manager.session)
         self.pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -64,20 +63,17 @@ class AdminService:
 
     async def register_admin(self, data: AdminRequestAdd) -> AdminResponse:
         """Регистрация администратора с проверкой пароля суперадмина"""
-        # Проверяем пароль суперадмина
         if not self._verify_superadmin_password(data.superadmin_password):
             raise SuperadminPasswordException()
 
-        # Проверяем уникальность email
         existing_admin = await self.repository.get_by_email(data.email)
         if existing_admin:
             raise AdminAlreadyExistsException()
 
-        # Создаем администратора
         admin_dict = {
             "email": data.email,
             "hashed_password": self.hash_password(data.password),
-            "updated_at": datetime.utcnow()  # ← Добавьте это поле!
+            "updated_at": datetime.utcnow()
         }
 
         admin = await self.repository.create(admin_dict)
@@ -93,7 +89,6 @@ class AdminService:
         if not self.verify_password(data.password, admin.hashed_password):
             raise IncorrectPasswordException()
 
-        # Обновляем время последнего входа
         await self.repository.update_last_login(admin.id)
 
         access_token = self.create_access_token(

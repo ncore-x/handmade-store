@@ -101,7 +101,6 @@ async def get_orders_by_status(
         )
 
 
-# Админские endpoints для управления заказами
 @router.put("/{order_id}/status", response_model=OrderResponse)
 async def update_order_status(
     order_id: int,

@@ -139,7 +139,6 @@ class ProductImageRepository(BaseRepository[ProductsImagesOrm]):
         """Установить изображение как главное"""
         from sqlalchemy import update
 
-        # Сначала сбросим все главные изображения для этого товара
         image = await self.get(db, image_id)
         if not image:
             return False
@@ -150,7 +149,6 @@ class ProductImageRepository(BaseRepository[ProductsImagesOrm]):
             .values(is_main=False)
         )
 
-        # Установим новое главное изображение
         result = await db.execute(
             update(ProductsImagesOrm)
             .where(ProductsImagesOrm.id == image_id)

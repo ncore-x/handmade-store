@@ -115,7 +115,6 @@ async def get_category_children(
     return await category_service.get_children(db, parent_id)
 
 
-# Админские endpoints
 @router.post("/", response_model=CategoryResponse)
 async def create_category(
     category_data: CategoryCreate,

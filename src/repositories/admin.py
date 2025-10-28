@@ -16,7 +16,6 @@ class AdminRepository(BaseRepository[AdminsOrm]):
 
     async def get_by_email(self, email: str):
         """Получить администратора по email"""
-        # Используем self.session напрямую, так как это AsyncSession
         result = await self.session.execute(
             select(self.model).where(self.model.email == email)
         )

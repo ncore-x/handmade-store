@@ -60,12 +60,10 @@ class OrderService(BaseService):
 
     async def create(self, db: AsyncSession, obj_in: OrderCreate) -> OrderResponse:
         """Создать заказ с валидацией и расчетами"""
-        # Валидация товаров и расчет стоимости
         subtotal = 0
         order_items_data = []
 
         for item in obj_in.items:
-            # Проверяем существование товара
             product = await self.product_repo.get(db, item.product_id)
             if not product:
                 raise ValueError(
@@ -78,7 +76,6 @@ class OrderService(BaseService):
                 raise ValueError(
                     f"Not enough stock for {product.name}. Available: {product.stock_quantity}")
 
-            # Сохраняем данные товара на момент заказа
             item_data = item.model_dump()
             item_data["product_name"] = product.name
             item_data["product_price"] = product.price
@@ -86,15 +83,12 @@ class OrderService(BaseService):
             order_items_data.append(item_data)
             subtotal += product.price * item.quantity
 
-        # Генерируем номер заказа
         from datetime import datetime
         order_number = f"ORD-{datetime.utcnow().strftime('%Y%m%d-%H%M%S')}"
 
-        # Расчет итоговой суммы (можно добавить логику доставки)
-        shipping_cost = 0  # В реальном приложении рассчитывается по адресу
+        shipping_cost = 0
         total_amount = subtotal + shipping_cost
 
-        # Создаем заказ
         order_data = obj_in.model_dump(exclude={"items"})
         order_data.update({
             "order_number": order_number,

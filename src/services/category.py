@@ -31,7 +31,6 @@ class CategoryService(BaseService):
         """Получить категорию с дочерними категориями"""
         category = await self.repository.get_with_children(db, id)
         if category:
-            # Добавляем счетчик товаров
             category_data = CategoryWithChildren.model_validate(category)
             category_data.products_count = len(
                 category.products) if category.products else 0
@@ -55,7 +54,6 @@ class CategoryService(BaseService):
 
     async def create(self, db: AsyncSession, obj_in: CategoryCreate) -> CategoryResponse:
         """Создать категорию с проверкой уникальности slug"""
-        # Проверяем уникальность slug
         existing = await self.repository.get_by_slug(db, obj_in.slug)
         if existing:
             raise ValueError(

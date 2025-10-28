@@ -39,7 +39,6 @@ class ProductService(BaseService):
         limit: int = 100
     ) -> List[ProductResponse]:
         """Получить товары по категории"""
-        # Проверяем существование категории
         category = await self.category_repo.get(db, category_id)
         if not category:
             raise ValueError(f"Category with id {category_id} not found")
@@ -73,7 +72,6 @@ class ProductService(BaseService):
 
     async def create(self, db: AsyncSession, obj_in: ProductCreate) -> ProductResponse:
         """Создать товар с проверкой категории"""
-        # Проверяем существование категории
         category = await self.category_repo.get(db, obj_in.category_id)
         if not category:
             raise ValueError(
@@ -93,14 +91,12 @@ class ProductService(BaseService):
 
         return await self.repository.update_stock(db, product_id, new_quantity)
 
-    # Работа с изображениями
     async def add_image(
         self,
         db: AsyncSession,
         image_data: ProductImageCreate
     ) -> ProductImageResponse:
         """Добавить изображение к товару"""
-        # Проверяем существование товара
         product = await self.repository.get(db, image_data.product_id)
         if not product:
             raise ValueError(
