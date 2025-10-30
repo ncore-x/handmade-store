@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Request, Response
+from fastapi import APIRouter, Depends, Request, Response
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.utils.dependencies import AdminIdDep, DBDep
-from src.schemas.admin import AdminRequestAdd, AdminResponse
+from src.schemas.admin import Admin, AdminRequestAdd, AdminRequestLogin, AdminResponse
 from src.services.admin import AdminService
 from src.exceptions import (
     AdminAlreadyExistsException,
@@ -14,9 +15,10 @@ from src.exceptions import (
     ExpiredTokenException,
     IncorrectPasswordException,
     IncorrectPasswordHTTPException,
-    IncorrectTokenException
+    IncorrectTokenException,
+    SuperadminPasswordException,
+    SuperadminPasswordHTTPException
 )
-
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -24,18 +26,29 @@ router = APIRouter(prefix="/admin", tags=["admin"])
 @router.post("/register", summary="Регистрация нового администратора")
 async def register_admin(
     data: AdminRequestAdd,
+    request: Request,
     db: DBDep,
 ):
+    token = request.cookies.get("access_token")
+    if token:
+        try:
+            AdminService(db).verify_token(token)
+            raise AdminIsAlreadyAuthenticatedHTTPException()
+        except (ExpiredTokenException, IncorrectTokenException):
+            pass
+
     try:
         await AdminService(db).register_admin(data)
     except AdminAlreadyExistsException:
         raise AdminEmailAlreadyExistsHTTPException()
+    except SuperadminPasswordException:
+        raise SuperadminPasswordHTTPException()
     return {"detail": "Вы успешно зарегистрировались!"}
 
 
-@router.post("/login", summary="Вход администратора в систему")
+@router.post("/login", summary="Вход администратора в систему", response_model=dict)
 async def login_admin(
-    data: AdminRequestAdd,
+    data: AdminRequestLogin,
     response: Response,
     request: Request,
     db: DBDep,
@@ -43,11 +56,9 @@ async def login_admin(
     token = request.cookies.get("access_token")
     if token:
         try:
-            AdminService(db).decode_token(token)
+            AdminService(db).verify_token(token)
             raise AdminIsAlreadyAuthenticatedHTTPException()
-        except ExpiredTokenException:
-            pass
-        except IncorrectTokenException:
+        except (ExpiredTokenException, IncorrectTokenException):
             pass
 
     try:
@@ -61,7 +72,7 @@ async def login_admin(
     return {"detail": "Успешный вход в систему!", "access_token": access_token}
 
 
-@router.get("/me", summary="Получение текущего администратора в системе", response_model=AdminResponse)
+@router.get("/me", summary="Получение текущего администратора в системе", response_model=Admin)
 async def get_me(
     admin_id: AdminIdDep,
     db: DBDep,
@@ -69,8 +80,12 @@ async def get_me(
     return await AdminService(db).get_one_or_none_admin(admin_id)
 
 
-@router.post("/logout", summary="Выход из системы", response_model=None)
-async def logout_admin(response: Response, request: Request, db: DBDep):
+@router.post("/logout", summary="Выход из системы", response_model=dict)
+async def logout_admin(
+    response: Response,
+    request: Request,
+    db: DBDep
+):
     token = request.cookies.get("access_token")
     try:
         await AdminService(db).logout_admin(token)

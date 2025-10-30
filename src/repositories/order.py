@@ -1,10 +1,10 @@
 from typing import List, Optional, Dict, Any
-from sqlalchemy import select, func
+from sqlalchemy import select, update, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from src.repositories.base import BaseRepository
 from src.models.order import OrdersOrm, OrdersItemsOrm
+from src.repositories.base import BaseRepository
 
 
 class OrderRepository(BaseRepository[OrdersOrm]):
@@ -24,10 +24,7 @@ class OrderRepository(BaseRepository[OrdersOrm]):
         """Получить заказ с позициями и товарами"""
         result = await db.execute(
             select(OrdersOrm)
-            .options(
-                selectinload(OrdersOrm.items).selectinload(
-                    OrdersItemsOrm.product)
-            )
+            .options(selectinload(OrdersOrm.items).selectinload(OrdersItemsOrm.product))
             .where(OrdersOrm.id == id)
         )
         return result.scalar_one_or_none()
@@ -64,15 +61,8 @@ class OrderRepository(BaseRepository[OrdersOrm]):
         )
         return result.scalars().all()
 
-    async def update_status(
-        self,
-        db: AsyncSession,
-        order_id: int,
-        status: str
-    ) -> bool:
+    async def update_status(self, db: AsyncSession, order_id: int, status: str) -> bool:
         """Обновить статус заказа"""
-        from sqlalchemy import update
-
         result = await db.execute(
             update(OrdersOrm)
             .where(OrdersOrm.id == order_id)
@@ -89,8 +79,6 @@ class OrderRepository(BaseRepository[OrdersOrm]):
         payment_id: Optional[str] = None
     ) -> bool:
         """Обновить статус оплаты"""
-        from sqlalchemy import update
-
         values = {"payment_status": payment_status}
         if payment_id:
             values["payment_id"] = payment_id
@@ -105,35 +93,19 @@ class OrderRepository(BaseRepository[OrdersOrm]):
 
     async def get_order_stats(self, db: AsyncSession) -> Dict[str, Any]:
         """Получить статистику по заказам"""
-
-        total_result = await db.execute(
-            select(func.count(OrdersOrm.id))
-        )
-        total_orders = total_result.scalar()
-
-        pending_result = await db.execute(
-            select(func.count(OrdersOrm.id))
-            .where(OrdersOrm.status == "pending")
-        )
-        pending_orders = pending_result.scalar()
-
-        completed_result = await db.execute(
-            select(func.count(OrdersOrm.id))
-            .where(OrdersOrm.status == "completed")
-        )
-        completed_orders = completed_result.scalar()
-
-        revenue_result = await db.execute(
+        total_orders = (await db.execute(select(func.count(OrdersOrm.id)))).scalar() or 0
+        pending_orders = (await db.execute(select(func.count(OrdersOrm.id)).where(OrdersOrm.status == "pending"))).scalar() or 0
+        completed_orders = (await db.execute(select(func.count(OrdersOrm.id)).where(OrdersOrm.status == "completed"))).scalar() or 0
+        total_revenue = (await db.execute(
             select(func.coalesce(func.sum(OrdersOrm.total_amount), 0))
             .where(OrdersOrm.payment_status == "paid")
-        )
-        total_revenue = revenue_result.scalar()
+        )).scalar() or 0
 
         return {
-            "total_orders": total_orders or 0,
-            "pending_orders": pending_orders or 0,
-            "completed_orders": completed_orders or 0,
-            "total_revenue": total_revenue or 0
+            "total_orders": total_orders,
+            "pending_orders": pending_orders,
+            "completed_orders": completed_orders,
+            "total_revenue": total_revenue
         }
 
 

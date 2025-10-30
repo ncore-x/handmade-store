@@ -17,14 +17,12 @@ class OrderService(BaseService):
         self.product_repo = ProductRepository()
 
     async def get_with_items(self, db: AsyncSession, id: int) -> Optional[OrderWithItems]:
-        """Получить заказ с позициями"""
         order = await self.repository.get_with_items(db, id)
         if order:
             return OrderWithItems.model_validate(order)
         return None
 
     async def get_with_items_and_products(self, db: AsyncSession, id: int) -> Optional[OrderFull]:
-        """Получить заказ с позициями и товарами"""
         order = await self.repository.get_with_items_and_products(db, id)
         if order:
             return OrderFull.model_validate(order)
@@ -37,7 +35,6 @@ class OrderService(BaseService):
         skip: int = 0,
         limit: int = 100
     ) -> List[OrderResponse]:
-        """Получить заказы по email клиента"""
         orders = await self.repository.get_by_customer_email(db, email, skip, limit)
         return [OrderResponse.model_validate(order) for order in orders]
 
@@ -48,7 +45,6 @@ class OrderService(BaseService):
         skip: int = 0,
         limit: int = 100
     ) -> List[OrderResponse]:
-        """Получить заказы по статусу"""
         valid_statuses = ["pending", "processing",
                           "shipped", "delivered", "cancelled"]
         if status not in valid_statuses:
@@ -59,33 +55,33 @@ class OrderService(BaseService):
         return [OrderResponse.model_validate(order) for order in orders]
 
     async def create(self, db: AsyncSession, obj_in: OrderCreate) -> OrderResponse:
-        """Создать заказ с валидацией и расчетами"""
         subtotal = 0
         order_items_data = []
 
+        # Проверка наличия товаров и подсчет стоимости
         for item in obj_in.items:
             product = await self.product_repo.get(db, item.product_id)
             if not product:
                 raise ValueError(
                     f"Product with id {item.product_id} not found")
-
             if not product.in_stock:
                 raise ValueError(f"Product {product.name} is out of stock")
-
             if item.quantity > product.stock_quantity:
                 raise ValueError(
-                    f"Not enough stock for {product.name}. Available: {product.stock_quantity}")
+                    f"Not enough stock for {product.name}. Available: {product.stock_quantity}"
+                )
 
             item_data = item.model_dump()
-            item_data["product_name"] = product.name
-            item_data["product_price"] = product.price
+            item_data.update({
+                "product_name": product.name,
+                "product_price": product.price
+            })
 
             order_items_data.append(item_data)
             subtotal += product.price * item.quantity
 
         from datetime import datetime
         order_number = f"ORD-{datetime.utcnow().strftime('%Y%m%d-%H%M%S')}"
-
         shipping_cost = 0
         total_amount = subtotal + shipping_cost
 
@@ -101,12 +97,11 @@ class OrderService(BaseService):
 
         order = await self.repository.create(db, order_data)
 
-        # Создаем позиции заказа
+        # Создание позиций заказа и обновление складских остатков
         for item_data in order_items_data:
             item_data["order_id"] = order.id
             await self.item_repo.create(db, item_data)
-
-            # Обновляем остатки товара
+            product = await self.product_repo.get(db, item_data["product_id"])
             await self.product_repo.update_stock(
                 db,
                 item_data["product_id"],
@@ -115,19 +110,12 @@ class OrderService(BaseService):
 
         return await self.get_with_items(db, order.id)
 
-    async def update_status(
-        self,
-        db: AsyncSession,
-        order_id: int,
-        status: str
-    ) -> bool:
-        """Обновить статус заказа"""
+    async def update_status(self, db: AsyncSession, order_id: int, status: str) -> bool:
         valid_statuses = ["pending", "processing",
                           "shipped", "delivered", "cancelled"]
         if status not in valid_statuses:
             raise ValueError(
                 f"Invalid status. Must be one of: {valid_statuses}")
-
         return await self.repository.update_status(db, order_id, status)
 
     async def update_payment_status(
@@ -137,16 +125,13 @@ class OrderService(BaseService):
         payment_status: str,
         payment_id: Optional[str] = None
     ) -> bool:
-        """Обновить статус оплаты"""
         valid_statuses = ["pending", "paid", "failed", "refunded"]
         if payment_status not in valid_statuses:
             raise ValueError(
                 f"Invalid payment status. Must be one of: {valid_statuses}")
-
         return await self.repository.update_payment_status(db, order_id, payment_status, payment_id)
 
     async def get_order_stats(self, db: AsyncSession) -> OrderStats:
-        """Получить статистику по заказам"""
         stats = await self.repository.get_order_stats(db)
         return OrderStats(**stats)
 

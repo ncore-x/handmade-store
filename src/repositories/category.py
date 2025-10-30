@@ -8,59 +8,51 @@ from src.models.category import CategoriesOrm
 
 
 class CategoryRepository(BaseRepository[CategoriesOrm]):
-    def __init__(self, session: AsyncSession):
-        super().__init__(CategoriesOrm, session)
+    def __init__(self):
+        super().__init__(CategoriesOrm)
 
-    async def get_by_slug(self, slug: str) -> Optional[CategoriesOrm]:
-        """Найти категорию по slug"""
-        result = await self.session.execute(
-            select(CategoriesOrm).where(CategoriesOrm.slug == slug)
-        )
+    async def get_by_slug(self, db: AsyncSession, slug: str) -> Optional[CategoriesOrm]:
+        result = await db.execute(select(self.model).where(self.model.slug == slug))
         return result.scalar_one_or_none()
 
-    async def get_with_products(self, id: int) -> Optional[CategoriesOrm]:
-        """Получить категорию с товарами"""
-        result = await self.session.execute(
-            select(CategoriesOrm)
+    async def get_with_products(self, db: AsyncSession, id: int) -> Optional[CategoriesOrm]:
+        result = await db.execute(
+            select(self.model)
             .options(selectinload(CategoriesOrm.products))
-            .where(CategoriesOrm.id == id)
+            .where(self.model.id == id)
         )
         return result.scalar_one_or_none()
 
-    async def get_root_categories(self) -> List[CategoriesOrm]:
-        """Получить корневые категории (без parent_id)"""
-        result = await self.session.execute(
-            select(CategoriesOrm)
-            .where(CategoriesOrm.parent_id.is_(None))
-            .where(CategoriesOrm.is_active == True)
-            .order_by(CategoriesOrm.sort_order)
+    async def get_root_categories(self, db: AsyncSession) -> List[CategoriesOrm]:
+        result = await db.execute(
+            select(self.model)
+            .where(self.model.parent_id.is_(None))
+            .where(self.model.is_active == True)
+            .order_by(self.model.sort_order)
         )
         return result.scalars().all()
 
-    async def get_children(self, parent_id: int) -> List[CategoriesOrm]:
-        """Получить дочерние категории"""
-        result = await self.session.execute(
-            select(CategoriesOrm)
-            .where(CategoriesOrm.parent_id == parent_id)
-            .where(CategoriesOrm.is_active == True)
-            .order_by(CategoriesOrm.sort_order)
+    async def get_children(self, db: AsyncSession, parent_id: int) -> List[CategoriesOrm]:
+        result = await db.execute(
+            select(self.model)
+            .where(self.model.parent_id == parent_id)
+            .where(self.model.is_active == True)
+            .order_by(self.model.sort_order)
         )
         return result.scalars().all()
 
-    async def get_with_children(self, id: int) -> Optional[CategoriesOrm]:
-        """Получить категорию с дочерними категориями"""
-        result = await self.session.execute(
-            select(CategoriesOrm)
-            .options(selectinload(CategoriesOrm.children))
-            .where(CategoriesOrm.id == id)
+    async def get_with_children(self, db: AsyncSession, id: int) -> Optional[CategoriesOrm]:
+        result = await db.execute(
+            select(self.model)
+            .options(selectinload(self.model.children))
+            .where(self.model.id == id)
         )
         return result.scalar_one_or_none()
 
-    async def get_active_categories(self) -> List[CategoriesOrm]:
-        """Получить все активные категории"""
-        result = await self.session.execute(
-            select(CategoriesOrm)
-            .where(CategoriesOrm.is_active == True)
-            .order_by(CategoriesOrm.sort_order, CategoriesOrm.name)
+    async def get_active_categories(self, db: AsyncSession) -> List[CategoriesOrm]:
+        result = await db.execute(
+            select(self.model)
+            .where(self.model.is_active == True)
+            .order_by(self.model.sort_order, self.model.name)
         )
         return result.scalars().all()

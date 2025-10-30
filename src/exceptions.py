@@ -90,3 +90,8 @@ class NoAccessTokenHTTPException(HandmadeHTTPException):
 class AdminNotAuthenticatedHTTPException(HandmadeHTTPException):
     status_code = 401
     detail = "Вы не в системе, выход невозможен!"
+
+
+class SuperadminPasswordHTTPException(HandmadeHTTPException):
+    status_code = 403
+    detail = "Неверный пароль суперадмина!"

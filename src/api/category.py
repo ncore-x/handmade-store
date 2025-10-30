@@ -19,7 +19,6 @@ async def get_categories(
     category_service: CategoryService = Depends(get_category_service),
     db: AsyncSession = Depends(get_db)
 ):
-    """Получить список категорий"""
     return await category_service.get_multi(db, skip, limit)
 
 
@@ -28,7 +27,6 @@ async def get_active_categories(
     category_service: CategoryService = Depends(get_category_service),
     db: AsyncSession = Depends(get_db)
 ):
-    """Получить активные категории"""
     return await category_service.get_active_categories(db)
 
 
@@ -37,7 +35,6 @@ async def get_root_categories(
     category_service: CategoryService = Depends(get_category_service),
     db: AsyncSession = Depends(get_db)
 ):
-    """Получить корневые категории"""
     return await category_service.get_root_categories(db)
 
 
@@ -47,13 +44,10 @@ async def get_category(
     category_service: CategoryService = Depends(get_category_service),
     db: AsyncSession = Depends(get_db)
 ):
-    """Получить категорию по ID"""
     category = await category_service.get(db, category_id)
     if not category:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Category not found"
-        )
+            status_code=status.HTTP_404_NOT_FOUND, detail="Category not found")
     return category
 
 
@@ -63,13 +57,10 @@ async def get_category_with_products(
     category_service: CategoryService = Depends(get_category_service),
     db: AsyncSession = Depends(get_db)
 ):
-    """Получить категорию с товарами"""
     category = await category_service.get_with_products(db, category_id)
     if not category:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Category not found"
-        )
+            status_code=status.HTTP_404_NOT_FOUND, detail="Category not found")
     return category
 
 
@@ -79,13 +70,10 @@ async def get_category_with_children(
     category_service: CategoryService = Depends(get_category_service),
     db: AsyncSession = Depends(get_db)
 ):
-    """Получить категорию с дочерними категориями"""
     category = await category_service.get_with_children(db, category_id)
     if not category:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Category not found"
-        )
+            status_code=status.HTTP_404_NOT_FOUND, detail="Category not found")
     return category
 
 
@@ -95,13 +83,10 @@ async def get_category_by_slug(
     category_service: CategoryService = Depends(get_category_service),
     db: AsyncSession = Depends(get_db)
 ):
-    """Получить категорию по slug"""
     category = await category_service.get_by_slug(db, slug)
     if not category:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Category not found"
-        )
+            status_code=status.HTTP_404_NOT_FOUND, detail="Category not found")
     return category
 
 
@@ -111,7 +96,6 @@ async def get_category_children(
     category_service: CategoryService = Depends(get_category_service),
     db: AsyncSession = Depends(get_db)
 ):
-    """Получить дочерние категории"""
     return await category_service.get_children(db, parent_id)
 
 
@@ -121,14 +105,11 @@ async def create_category(
     category_service: CategoryService = Depends(get_category_service),
     db: AsyncSession = Depends(get_db)
 ):
-    """Создать новую категорию"""
     try:
         return await category_service.create(db, category_data)
     except ValueError as e:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
 @router.put("/{category_id}", response_model=CategoryResponse)
@@ -138,13 +119,10 @@ async def update_category(
     category_service: CategoryService = Depends(get_category_service),
     db: AsyncSession = Depends(get_db)
 ):
-    """Обновить категорию"""
     updated_category = await category_service.update(db, category_id, category_update)
     if not updated_category:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Category not found"
-        )
+            status_code=status.HTTP_404_NOT_FOUND, detail="Category not found")
     return updated_category
 
 
@@ -154,11 +132,8 @@ async def delete_category(
     category_service: CategoryService = Depends(get_category_service),
     db: AsyncSession = Depends(get_db)
 ):
-    """Удалить категорию"""
     success = await category_service.delete(db, category_id)
     if not success:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Category not found"
-        )
+            status_code=status.HTTP_404_NOT_FOUND, detail="Category not found")
     return {"message": "Category deleted successfully"}

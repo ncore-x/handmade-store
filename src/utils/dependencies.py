@@ -1,13 +1,13 @@
-from typing import Annotated
+from typing import Annotated, AsyncGenerator
 from fastapi import Depends, Query, Request
 from pydantic import BaseModel
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.utils.database import async_session_maker
 from src.services.admin import AdminService
 from src.services.category import CategoryService
 from src.services.order import OrderService
 from src.services.product import ProductService
-from src.utils.db_manager import DBManager
 from src.exceptions import (
     ExpiredTokenException,
     ExpiredTokenHTTPException,
@@ -22,25 +22,31 @@ class PaginationParams(BaseModel):
     per_page: Annotated[int | None, Query(None, ge=1, lt=30)]
 
 
-async def get_db():
-    async with DBManager(session_factory=async_session_maker) as db:
-        yield db
+PaginationDep = Annotated[PaginationParams, Depends()]
 
 
-def get_admin_service() -> AdminService:
-    return AdminService()
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
+    async with async_session_maker() as session:
+        yield session
 
 
-def get_category_service() -> CategoryService:
-    return CategoryService()
+DBDep = Annotated[AsyncSession, Depends(get_db)]
 
 
-def get_product_service() -> ProductService:
-    return ProductService()
+def get_admin_service(db: DBDep) -> AdminService:
+    return AdminService(db)
 
 
-def get_order_service() -> OrderService:
-    return OrderService()
+def get_category_service(db: DBDep) -> CategoryService:
+    return CategoryService(db)
+
+
+def get_product_service(db: DBDep) -> ProductService:
+    return ProductService(db)
+
+
+def get_order_service(db: DBDep) -> OrderService:
+    return OrderService(db)
 
 
 def get_token(request: Request) -> str:
@@ -52,22 +58,17 @@ def get_token(request: Request) -> str:
 
 def get_current_admin_id(
     token: str = Depends(get_token),
-    db: DBManager = Depends(lambda: DBManager(
-        session_factory=async_session_maker)),
+    db: AsyncSession = Depends(get_db),
 ) -> int:
     try:
-        payload = AdminService(db).decode_token(token)
+        admin_service = AdminService(db)
+        admin_id = admin_service.verify_token(token)
     except ExpiredTokenException:
-        raise ExpiredTokenHTTPException
+        raise ExpiredTokenHTTPException()
     except IncorrectTokenException:
         raise IncorrectTokenHTTPException()
 
-    admin_id = payload.get("admin_id")
-    if not admin_id:
-        raise IncorrectTokenHTTPException()
     return admin_id
 
 
-PaginationDep = Annotated[PaginationParams, Depends()]
 AdminIdDep = Annotated[int, Depends(get_current_admin_id)]
-DBDep = Annotated[DBManager, Depends(get_db)]
